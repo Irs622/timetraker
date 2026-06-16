@@ -2,6 +2,10 @@ import Foundation
 import SwiftData
 import Observation
 
+// Import the protocol for dependency injection
+import StorageServiceProtocol
+import Observation
+
 @Observable
 @MainActor
 public final class TimerViewModel {
@@ -9,13 +13,14 @@ public final class TimerViewModel {
     public var selectedCategory: StudyCategory?
     
     // For saving sessions upon stop
-    public var storageService: StorageService?
+    private let storageService: StorageServiceProtocol
     
     // Using a Date to anchor the true start time of the session
     private var trueSessionStartTime: Date?
     
-    public init(timerManager: TimerManager = TimerManager()) {
+    public init(timerManager: TimerManager = TimerManager(), storageService: StorageServiceProtocol) {
         self.timerManager = timerManager
+        self.storageService = storageService
     }
     
     public var timeString: String {
@@ -47,10 +52,10 @@ public final class TimerViewModel {
     }
     
     private func saveSession() {
-        guard let storage = storageService, timerManager.elapsedTime > 0 else { return }
+        guard timerManager.elapsedTime > 0 else { return }
         guard let startTime = trueSessionStartTime else { return }
         
-        storage.saveSession(
+        storageService.saveSession(
             startTime: startTime,
             endTime: Date(),
             duration: timerManager.elapsedTime,

@@ -8,7 +8,7 @@ final class StatisticsViewModelTests: XCTestCase {
     
     override func setUp() {
         super.setUp()
-        viewModel = StatisticsViewModel()
+        viewModel = StatisticsViewModel(sessionRepository: MockSessionRepository())
     }
     
     override func tearDown() {

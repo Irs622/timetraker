@@ -3,7 +3,8 @@ import SwiftData
 
 struct StatisticsView: View {
     @Query(sort: \StudySession.startTime, order: .reverse) private var sessions: [StudySession]
-    @State private var viewModel = StatisticsViewModel()
+    @Environment(\.modelContext) private var modelContext
+    @StateObject private var viewModel = StatisticsViewModel(sessionRepository: DefaultSessionRepository(context: modelContext))
     
     var body: some View {
         ScrollView {

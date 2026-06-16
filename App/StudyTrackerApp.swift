@@ -3,7 +3,7 @@ import SwiftData
 
 @main
 struct StudyTrackerApp: App {
-    @State private var timerViewModel = TimerViewModel()
+    @StateObject private var timerViewModel = TimerViewModel(storageService: StorageService(context: modelContainer.mainContext))
     let modelContainer: ModelContainer
     
     init() {

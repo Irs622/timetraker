@@ -1,6 +1,8 @@
 import Foundation
 import SwiftData
+import OSLog
 import Observation
+
 
 public struct CategoryBreakdown: Identifiable {
     public let id = UUID()
@@ -11,12 +13,16 @@ public struct CategoryBreakdown: Identifiable {
 @Observable
 @MainActor
 public final class StatisticsViewModel {
+    private let logger = Logger(subsystem: "com.studytracker", category: "StatisticsViewModel")
+    private let sessionRepository: SessionRepositoryProtocol
     public private(set) var dailyTotal: TimeInterval = 0
     public private(set) var weeklyTotal: TimeInterval = 0
     public private(set) var dailyBreakdown: [CategoryBreakdown] = []
     public private(set) var weeklyBreakdown: [CategoryBreakdown] = []
     
-    public init() {}
+    public init(sessionRepository: SessionRepositoryProtocol) {
+        self.sessionRepository = sessionRepository
+    }
     
     public func recalculate(sessions: [StudySession]) {
         let calendar = Calendar.current
@@ -45,5 +51,14 @@ public final class StatisticsViewModel {
         
         return dict.map { CategoryBreakdown(name: $0.key, duration: $0.value) }
                    .sorted { $0.duration > $1.duration } // Sort descending by time spent
+    }
+    /// Asynchronously fetch all sessions and recalculate statistics.
+    public func recalculateAll() async {
+        do {
+            let sessions = try await sessionRepository.fetchAllSessions()
+            recalculate(sessions: sessions)
+        } catch {
+            logger.error("Failed to fetch sessions: \(error.localizedDescription)")
+        }
     }
 }
